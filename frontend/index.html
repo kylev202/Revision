@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Study Tool</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- ========== SIDEBAR ========== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-icon">📚</span>
+      <span class="brand-text">StudyAI</span>
+    </div>
+    <div class="sidebar-section-label">MY FILES</div>
+    <ul class="file-list" id="file-list"></ul>
+    <div class="sidebar-footer">
+      <button class="btn-new-session" id="btn-new" title="New study session">
+        <span class="btn-new-icon">+</span>
+        New Session
+      </button>
+    </div>
+  </aside>
+
+  <!-- ========== MAIN ========== -->
+  <main class="main" id="main">
+    <button class="btn-sidebar-toggle" id="btn-toggle-sidebar" aria-label="Toggle sidebar" title="Toggle sidebar">
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+
+    <!-- UPLOAD VIEW -->
+    <section class="upload-view" id="upload-view">
+      <div class="upload-hero">
+        <div class="hero-badge">AI-Powered</div>
+        <h1>Study Smarter,<br/><span class="hero-accent">Not Harder</span></h1>
+        <p class="subtitle">Upload a PDF or paste your notes — AI generates quizzes, flashcards, mind maps &amp; more.</p>
+      </div>
+
+      <div class="input-section">
+        <div class="tabs" id="input-tabs">
+          <button class="tab active" data-tab="upload">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Upload PDF
+          </button>
+          <button class="tab" data-tab="paste">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h2"/><rect x="8" y="2" width="8" height="4" rx="1"/></svg>
+            Paste Text
+          </button>
+        </div>
+
+        <div class="tab-content" id="tab-upload">
+          <label class="file-drop" id="file-drop">
+            <input type="file" id="file-input" accept=".pdf" hidden />
+            <div class="file-drop-inner">
+              <svg class="file-drop-icon" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <span id="file-label" class="file-drop-text">Drop your PDF here or <u>browse</u></span>
+              <span class="file-drop-hint">Supports .pdf files up to 50k characters</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="tab-content hidden" id="tab-paste">
+          <textarea id="text-input" rows="8" placeholder="Paste your study material here..."></textarea>
+        </div>
+
+        <button class="btn-primary btn-full btn-generate" id="btn-generate">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10"/></svg>
+          Generate Study Material
+        </button>
+        <div class="error-msg hidden" id="error-msg"></div>
+        <div class="loading hidden" id="loading">
+          <div class="loading-inner">
+            <div class="spinner"></div>
+            <div class="loading-text">
+              <span class="loading-title">Generating your study material</span>
+              <span class="loading-subtitle">This may take 15-30 seconds…</span>
+            </div>
+          </div>
+          <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STUDY VIEW -->
+    <section class="study-view hidden" id="study-view">
+
+      <!-- Document title bar -->
+      <div class="doc-title-bar" id="doc-title-bar">
+        <span class="doc-title" id="doc-title"></span>
+      </div>
+
+      <!-- Mode Tabs -->
+      <nav class="mode-tabs" id="mode-tabs">
+        <button class="mode-tab active" data-mode="learn">
+          <span class="mode-tab-icon">📖</span>
+          <span class="mode-tab-label">Learn</span>
+        </button>
+        <button class="mode-tab" data-mode="quiz">
+          <span class="mode-tab-icon">❓</span>
+          <span class="mode-tab-label">Quiz</span>
+        </button>
+        <button class="mode-tab" data-mode="flashcards">
+          <span class="mode-tab-icon">🗂️</span>
+          <span class="mode-tab-label">Flashcards</span>
+        </button>
+        <button class="mode-tab" data-mode="testme">
+          <span class="mode-tab-icon">🧠</span>
+          <span class="mode-tab-label">Test Me</span>
+        </button>
+        <button class="mode-tab" data-mode="explain">
+          <span class="mode-tab-icon">🎓</span>
+          <span class="mode-tab-label">Explain It</span>
+        </button>
+        <button class="mode-tab" data-mode="askai">
+          <span class="mode-tab-icon">💬</span>
+          <span class="mode-tab-label">Ask AI</span>
+        </button>
+      </nav>
+
+      <!-- ===== LEARN MODE ===== -->
+      <div class="mode-panel" id="mode-learn">
+        <div class="card card-summary">
+          <div class="card-header">
+            <div class="card-icon">📝</div>
+            <h2>Summary</h2>
+          </div>
+          <p id="summary-text" class="summary-body"></p>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🗺️</div>
+            <h2>Mind Map</h2>
+          </div>
+          <div class="mindmap-container" id="mindmap-container"></div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">💡</div>
+            <h2>Key Concepts</h2>
+          </div>
+          <p class="mode-desc">Click a concept to expand its details.</p>
+          <div id="concept-details-container"></div>
+        </div>
+      </div>
+
+      <!-- ===== ASK AI MODE ===== -->
+      <div class="mode-panel hidden" id="mode-askai">
+        <div class="card card-chat">
+          <div class="card-header">
+            <div class="card-icon">💬</div>
+            <h2>Ask AI</h2>
+          </div>
+          <p class="mode-desc">Chat with AI about your document. Ask questions, request explanations, or explore topics deeper.</p>
+          <div class="chat-container" id="chat-container">
+            <div class="chat-messages" id="chat-messages">
+              <div class="chat-msg ai">
+                <div class="chat-avatar">🤖</div>
+                <div class="chat-bubble">Ask me anything about the document!</div>
+              </div>
+            </div>
+            <div class="chat-input-row">
+              <input type="text" id="chat-input" placeholder="Type your question..." />
+              <button class="btn-chat-send" id="btn-chat-send" aria-label="Send message" title="Send message">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== QUIZ MODE ===== -->
+      <div class="mode-panel hidden" id="mode-quiz">
+        <div class="card">
+          <div class="quiz-headline">
+            <div>
+              <div class="quiz-kicker">Adaptive Quiz</div>
+              <div class="quiz-topic" id="quiz-topic">Review core concepts from your document</div>
+            </div>
+            <div class="quiz-live-score" id="quiz-live-score">0 pts</div>
+          </div>
+
+          <!-- Progress bar -->
+          <div class="quiz-progress-bar" id="quiz-progress-bar">
+            <div class="quiz-progress-fill" id="quiz-progress-fill"></div>
+          </div>
+          <div class="quiz-status" id="quiz-status"></div>
+
+          <!-- Single question container -->
+          <div id="quiz-container"></div>
+
+          <!-- Submit / Next buttons -->
+          <button class="btn-primary btn-full hidden" id="btn-quiz-submit">Submit Answer</button>
+          <button class="btn-primary btn-full hidden" id="btn-quiz-next">Next Question →</button>
+
+          <!-- Results screen (hidden until quiz ends) -->
+          <div class="quiz-results hidden" id="quiz-results">
+            <div class="quiz-results-header">
+              <div class="quiz-results-emoji">📊</div>
+              <h2>Quiz Complete!</h2>
+              <div class="quiz-results-big-score" id="quiz-results-score"></div>
+              <div class="quiz-results-grade" id="quiz-results-grade"></div>
+            </div>
+            <div class="quiz-results-summary" id="quiz-results-summary"></div>
+          </div>
+
+          <!-- Round actions -->
+          <div class="quiz-round-actions hidden" id="quiz-round-actions">
+            <button class="btn-primary" id="btn-next-round">Next Round (Incorrect Only)</button>
+            <button class="btn-pill" id="btn-restart-quiz">Restart All</button>
+            <button class="btn-pill" id="btn-new-quiz">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              New Quiz
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== FLASHCARDS MODE ===== -->
+      <div class="mode-panel hidden" id="mode-flashcards">
+        <div class="card">
+          <div class="fc-toolbar">
+            <div class="card-header">
+              <div class="card-icon">🗂️</div>
+              <h2>Flashcards</h2>
+            </div>
+            <button class="btn-pill" id="btn-fc-add">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Card
+            </button>
+          </div>
+          <div class="fc-section-tabs" id="fc-section-tabs"></div>
+          <div class="fc-difficulty-bar" id="fc-difficulty-bar">
+            <span class="fc-diff-label">Rate this card:</span>
+            <button class="btn-diff btn-hard" data-diff="hard">🔴 Hard</button>
+            <button class="btn-diff btn-medium" data-diff="medium">🟡 Medium</button>
+            <button class="btn-diff btn-easy" data-diff="easy">🟢 Easy</button>
+          </div>
+          <div class="flashcard-carousel">
+            <button class="fc-nav" id="fc-prev" aria-label="Previous card">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <div class="flashcard" id="flashcard">
+              <div class="flashcard-inner" id="flashcard-inner">
+                <div class="flashcard-front" id="fc-front"></div>
+                <div class="flashcard-back" id="fc-back"></div>
+              </div>
+            </div>
+            <button class="fc-nav" id="fc-next" aria-label="Next card">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+          <p class="fc-counter" id="fc-counter"></p>
+          <p class="fc-hint">Click the card to flip</p>
+          <div class="fc-card-actions" id="fc-card-actions">
+            <button class="btn-pill btn-pill-ghost" id="btn-fc-edit">✏️ Edit</button>
+            <button class="btn-pill btn-pill-danger" id="btn-fc-delete">🗑️ Delete</button>
+          </div>
+          <div class="fc-schedule-info" id="fc-schedule-info"></div>
+        </div>
+
+        <!-- Add/Edit modal -->
+        <div class="modal-overlay hidden" id="fc-modal-overlay">
+          <div class="modal">
+            <div class="modal-header">
+              <h3 id="fc-modal-title">Add Flashcard</h3>
+              <button class="modal-close" id="btn-fc-modal-cancel" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+              <label>Section</label>
+              <select id="fc-modal-section" title="Section"></select>
+              <label>Front</label>
+              <textarea id="fc-modal-front" rows="3" placeholder="Question or term..."></textarea>
+              <label>Back</label>
+              <textarea id="fc-modal-back" rows="3" placeholder="Answer or definition..."></textarea>
+            </div>
+            <div class="modal-actions">
+              <button class="btn-pill btn-pill-ghost" id="btn-fc-modal-cancel-footer">Cancel</button>
+              <button class="btn-primary" id="btn-fc-modal-save">Save Card</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== TEST ME MODE ===== -->
+      <div class="mode-panel hidden" id="mode-testme">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">🧠</div>
+            <h2>Test Me — Active Recall</h2>
+          </div>
+          <p class="mode-desc">Answer each question in your head, then reveal the answer.</p>
+          <div id="testme-container"></div>
+          <div class="testme-nav">
+            <button class="btn-pill btn-pill-ghost" id="btn-testme-prev">← Previous</button>
+            <span id="testme-counter" class="testme-counter-text"></span>
+            <button class="btn-pill btn-pill-ghost" id="btn-testme-next">Next →</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== EXPLAIN IT MODE ===== -->
+      <div class="mode-panel hidden" id="mode-explain">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon">💬</div>
+            <h2>Explain It — Feynman Technique</h2>
+          </div>
+          <p class="mode-desc">Pick a concept and explain it simply. The AI will evaluate your understanding.</p>
+          <label class="explain-label">Choose a concept:</label>
+          <select title="explain-concept" id="explain-concept" class="explain-select"></select>
+          <textarea id="explain-input" rows="8" placeholder="Explain this concept as if teaching a 12-year-old..."></textarea>
+          <button class="btn-primary btn-full" id="btn-explain-submit">Submit Explanation</button>
+          <div class="loading hidden" id="explain-loading">
+            <div class="loading-inner">
+              <div class="spinner"></div>
+              <div class="loading-text">
+                <span class="loading-title">AI is reading your explanation</span>
+              </div>
+            </div>
+          </div>
+          <div class="explain-result hidden" id="explain-result">
+            <div class="clarity-score" id="explain-clarity"></div>
+            <div class="explain-section">
+              <h3>✅ Strengths</h3>
+              <ul id="explain-strengths"></ul>
+            </div>
+            <div class="explain-section">
+              <h3>❌ Missing</h3>
+              <ul id="explain-missing"></ul>
+            </div>
+            <div class="explain-section">
+              <h3>💬 Feedback</h3>
+              <p id="explain-feedback"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <script src="/static/script.js"></script>
+</body>
+</html>

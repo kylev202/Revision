@@ -1,0 +1,431 @@
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+ 
+Week 4 — Study Notes 
+Network Layer  ·  IPv4  ·  ARP 
+ 
+Covers: OSI Layer 3 roles  ·  IPv4 characteristics  ·  Packet header  ·  Address types  ·  ARP 
+01  Role of the Network Layer 
+ 
+The network layer is Layer 3 of the OSI model. It enables data transfer not only within a single 
+network but across multiple interconnected networks — something the Data Link layer (L2) cannot 
+do alone. 
+ 
+ 
+💡  Key Point:  The Data Link layer handles communication within a single broadcast domain (e.g. 
+one VLAN). The Network layer extends this across routers to different networks. 
+ 
+Four Core Responsibilities
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+ 
+Responsibility 
+What it means 
+Addressing 
+Assigns unique IP address to each host. Every device in an IP network must 
+have a network-wide unique address. 
+Encapsulation 
+Receives Transport layer PDU (segment) → adds L3 header (src/dst IP) → 
+forms a Packet. 
+Decapsulation 
+At the destination: strips the L3 header → passes the transport PDU up to the 
+Transport layer. 
+Packet Routing 
+Forwards packets hop-by-hop from source to destination using local Routing 
+Tables on each router. 
+ 
+Hop-by-Hop Routing 
+In an IP network, routing decisions are made independently at each router (each hop). Every router: 
+▸ Inspects the Destination IP address in the packet header. 
+▸ Looks up its local routing table to find the best exit interface. 
+▸ Forwards the packet to the next hop. 
+ 
+ 
+ 
+Hop  — A single transit through one Layer 3 device (router) on the path from source to destination. 
+Routing Table  — A table on each router listing known destination networks and their corresponding 
+exit interfaces. 
+ 
+⚠️  Important:  The network layer provides device-to-device connectivity only. It does NOT deliver 
+data to the correct application — that is the job of the Transport layer and above. 
+ 
+Network Layer Problem Handling 
+Layer 3 protocols can define mechanisms to handle three categories of network issues: 
+ 
+Problem Category 
+Explanation / IP Behaviour 
+Packet Loss 
+IP does NOT detect or recover lost packets. The Transport layer (e.g. 
+TCP) handles retransmission.
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+Address Duplication 
+DHCP conflict detection warns if another host is using the same IP 
+address (IP does not prevent this itself). 
+Routing Failures 
+Routing protocols (e.g. OSPF, EIGRP) detect topology changes and 
+recalculate alternative paths in the routing table. 
+Throughput Issues 
+IP itself provides no QoS or resource reservation. Some routing 
+protocols factor in link bandwidth when choosing the best path. 
+ 
+02  Network Layer Protocols 
+ 
+Several protocols operate at Layer 3. The dominant ones in modern networking are: 
+ 
+Protocol 
+Notes 
+IPv4 
+Current dominant protocol. 32-bit addresses. Covered in depth this week. 
+IPv6 
+Next-generation. 128-bit addresses. Designed to replace IPv4 due to address 
+exhaustion. 
+IPX (Novell) 
+Legacy. Used in older Novell NetWare networks. Rarely seen today. 
+AppleTalk 
+Legacy. Used in older Apple networks. Superseded by IP. 
+CLNS / DECNet 
+Legacy. Used in older DEC and ISO networking environments. 
+ 
+03  IPv4 Characteristics 
+IPv4 has three fundamental characteristics that define how it operates:
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+1. Connectionless 
+▸ No handshake or session is established before sending data. 
+▸ The sender does not confirm the receiver is reachable before transmitting. 
+▸ No acknowledgement is sent when a packet arrives. 
+▸ The receiver has no advance notice a packet is coming — it just processes them as they arrive. 
+▸ IP is always ready to send and receive; zero overhead for connection setup. 
+ 
+📮  Analogy:  Like posting a letter — you drop it in the post box with no confirmation it was 
+delivered, and the recipient doesn't know it's coming. 
+ 
+2. Best-Effort Delivery 
+▸ IP does not guarantee packet delivery. 
+▸ IP does not guarantee packets arrive in the order they were sent. 
+▸ IP does not detect or recover from packet corruption or loss. 
+▸ Packets are processed First-In, First-Out (FIFO) — no prioritisation at Layer 3. 
+▸ Each packet is routed independently; two packets to the same destination may take different 
+paths. 
+ 
+✅  Benefit:  Best-effort means fast processing and low overhead. TCP (Transport layer) handles 
+reliability where it is needed. 
+ 
+3. Media Independent 
+▸ IPv4 operates identically regardless of the physical medium: copper Ethernet, fibre, serial, 
+wireless. 
+▸ The Data Link layer adapts the IP packet to the specific medium's frame format. 
+▸ However, IP must respect one media constraint: the Maximum Transfer Unit (MTU). 
+ 
+MTU (Maximum Transfer Unit)  — The largest PDU the Data Link layer can carry on a given link. 
+Standard Ethernet MTU = 1500 bytes. 
+ 
+When a packet is too large for a link's MTU, it is broken into smaller fragments — this is called IP 
+Fragmentation. Each fragment is forwarded and reassembled at the destination. 
+Scenario 
+MTU Detail 
+Ethernet link 
+MTU = 1500 bytes (standard) 
+Serial link (e.g.) 
+MTU may be as low as 200 bytes 
+Fragmentation 
+If packet (1500B) must cross a 200B MTU link → split into multiple fragments 
+Reassembly 
+Performed at the final destination host, not intermediate routers 
+ 
+04  IPv4 Packet Header
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+An IPv4 packet consists of a header followed by the payload (transport PDU). Understanding the 
+header fields is essential for understanding how IP routing works. 
+ 
+ 
+ 
+Header Field 
+Purpose 
+Version (4b) 
+IP version — value is 4 for IPv4 
+IHL (4b) 
+Internet Header Length — number of 32-bit words in the header (min = 5) 
+DSCP / ToS (8b) 
+Differentiated Services Code Point — used for QoS traffic classification 
+Total Length (16b) 
+Total size of the IP packet (header + data) in bytes. Max = 65,535 bytes 
+Identification (16b) 
+Identifies fragments belonging to the same original packet 
+Flags (3b) 
+Controls fragmentation: DF (Don't Fragment), MF (More Fragments) 
+Fragment Offset 
+(13b) 
+Position of this fragment within the original packet 
+TTL (8b) 
+Time to Live — decremented by 1 at each hop. Packet discarded when TTL 
+= 0. Prevents routing loops. 
+Protocol (8b) 
+Identifies the upper layer protocol: 6 = TCP, 17 = UDP, 1 = ICMP 
+Header Checksum 
+(16b) 
+Error check for the header only. Recalculated at every hop. 
+Source IP (32b) 
+IP address of the originating host 
+Destination IP (32b) 
+IP address of the intended destination host 
+Options (variable) 
+Rarely used optional fields (e.g. record route, timestamps) 
+ 
+🔑  Key Field — TTL:  TTL starts at a value set by the sender (commonly 64 or 128) and is 
+decremented by 1 at each router. When it reaches 0, the packet is discarded and an ICMP 'Time 
+Exceeded' message is sent back. This prevents packets from looping forever.
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+IP Addressing — Structure 
+An IPv4 address is a 32-bit number expressed in dotted decimal notation (four octets, each 0–255). It 
+follows a hierarchical structure: 
+ 
+▸ Network portion — identifies which network the host belongs to. 
+▸ Host portion — identifies the specific host within that network. 
+ 
+🗺️  Example:  192.168.1.10 /24  →  Network: 192.168.1.0  |  Host: .10  |  Broadcast: 192.168.1.255 
+ 
+The subnet mask (or prefix length /n) defines how many bits belong to the network portion. Within 
+each network: 
+▸ First address (all host bits = 0) → Network address — not assignable to hosts. 
+▸ Last address (all host bits = 1) → Broadcast address — not assignable to hosts. 
+▸ All addresses in between → valid host addresses. 
+ 
+05  IPv4 Communication Types 
+IPv4 supports three types of transmission, each using a different addressing scheme: 
+ 
+ 
+ 
+Unicast 
+▸ One sender → One receiver. 
+▸ Most common type of communication (web browsing, file transfer, SSH, etc.). 
+▸ Source and destination IPs are specific host addresses. 
+▸ Unicast range: any valid host address not in multicast or broadcast ranges. 
+ 
+Broadcast 
+▸ One sender → All hosts in a network.
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+ 
+Two types of broadcast: 
+Type 
+Details 
+Limited Broadcast 
+Destination: 255.255.255.255 Stays within the local L2 network. Routers do 
+NOT forward. 
+Directed Broadcast 
+Destination: Network broadcast address (e.g. 192.168.1.255) Originated from 
+outside the target network. Routers may forward if configured. 
+ 
+⚠️  Note:  Both types use the universal broadcast MAC address (FF:FF:FF:FF:FF:FF) at Layer 2. 
+ 
+Multicast 
+▸ One sender → A selected group of hosts, potentially across multiple networks. 
+▸ Hosts must subscribe to a multicast group via a client program (using IGMP). 
+▸ Only one copy of the packet is sent until the path branches toward multiple receivers — far 
+more efficient than sending individual unicasts to each member. 
+ 
+Multicast Range 
+Purpose 
+224.0.0.0 – 
+224.0.0.255 
+Link-local (single network segment). Used by routing protocols e.g. OSPF, 
+EIGRP. 
+224.0.1.0 – 
+238.255.255.255 
+Globally scoped. Used for internet multicast applications (e.g. NTP: 
+224.0.1.1). 
+239.0.0.0 – 
+239.255.255.255 
+Administratively scoped (organisation-local). 
+ 
+06  IPv4 Address Types 
+Not all IPv4 addresses serve the same purpose. Understanding the different categories is essential 
+for network design and troubleshooting.
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+ 
+Public vs Private Addresses 
+Private address blocks are for internal use only and are NOT routed on the public internet. Network 
+Address Translation (NAT) is used to allow private hosts to reach the internet. 
+ 
+Private Range 
+CIDR / Notes 
+10.0.0.0 – 
+10.255.255.255 
+10.0.0.0/8 — Large enterprises 
+172.16.0.0 – 
+172.31.255.255 
+172.16.0.0/12 — Medium networks 
+192.168.0.0 – 
+192.168.255.255 
+192.168.0.0/16 — Home / small office 
+ 
+Special-Use Addresses 
+Address / Range 
+Purpose 
+127.0.0.1  
+(127.x.x.x) 
+Loopback — traffic sent to the host itself. Used for diagnostics. 
+169.254.0.0/16 
+Link-Local (APIPA) — auto-assigned when DHCP is unavailable. Not routed. 
+192.0.2.0/24 
+TEST-NET — reserved for documentation and teaching examples. 
+100.64.0.0/10 
+Shared Address Space — ISP use only, not globally routable. 
+240.0.0.0 – 
+255.255.255.254 
+Experimental — reserved, not in general use. 
+255.255.255.255 
+Limited broadcast — all hosts on local segment. 
+ 
+Legacy Classful Addressing 
+Before CIDR (Classless Inter-Domain Routing), IPv4 addresses were divided into fixed classes: 
+Class 
+Range  /  Default Mask  /  Hosts per network 
+Class A 
+1.0.0.0 – 126.255.255.255  |  /8  |  ~16 million hosts per network 
+Class B 
+128.0.0.0 – 191.255.255.255  |  /16  |  ~65,000 hosts per network 
+Class C 
+192.0.0.0 – 223.255.255.255  |  /24  |  254 hosts per network 
+Class D 
+224.0.0.0 – 239.255.255.255  |  Multicast — not for hosts 
+Class E 
+240.0.0.0 – 255.255.255.255  |  Experimental — reserved 
+ 
+📋  Note:  Classful addressing is now largely replaced by CIDR, which allows more flexible allocation 
+of addresses (e.g. /22, /27) rather than being locked to /8, /16, or /24 boundaries.
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+ 
+IPv4 Address Exhaustion & the Future 
+IPv4 provides approximately 4.3 billion addresses (2³²). This is no longer sufficient because: 
+▸ Every router needs multiple IP addresses (one per interface). 
+▸ Every internet-connected device (phones, printers, servers, IoT) requires an address. 
+▸ The explosive growth of devices in Asia and globally has accelerated exhaustion. 
+▸ NAT provides a workaround but breaks true end-to-end connectivity. 
+ 
+🔮  Solution:  IPv6 uses 128-bit addresses (2¹²⁸ ≈ 340 undecillion addresses) — effectively 
+unlimited. Adoption is growing but IPv4 remains dominant in many networks. 
+ 
+07  Address Resolution Protocol (ARP) 
+ARP bridges the gap between Layer 3 (IP addresses) and Layer 2 (MAC addresses). Before a 
+device can send a frame to another host on the same network, it must know that host's MAC 
+address. 
+ 
+Why Two Addresses? 
+ 
+ 
+In the TCP/IP stack, Layer 2 and Layer 3 use different addressing systems. IP handles end-to-end 
+delivery across networks; MAC handles hop-by-hop delivery within each network segment. Every 
+time a packet crosses a router, the MAC addresses in the frame change — the IP addresses do not. 
+ 
+🔑  Key Insight:  IP addresses are logical (can change). MAC addresses are physical (tied to 
+hardware). ARP is the mechanism that maps one to the other on a local segment. 
+ 
+ARP Operation
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+ 
+ 
+Step-by-step ARP process when PC-A (192.168.1.10) wants to reach PC-B (192.168.1.20): 
+1. PC-A checks its ARP cache for an entry for 192.168.1.20. 
+2. No entry found → PC-A sends an ARP Request as a Layer 2 BROADCAST (ff:ff:ff:ff:ff:ff). 
+3. The ARP Request asks: "Who has 192.168.1.20? Tell 192.168.1.10." 
+4. All devices on the segment receive the broadcast. Only PC-B recognises its own IP and 
+responds. 
+5. PC-B sends an ARP Reply as a UNICAST directly back to PC-A with its MAC address. 
+6. PC-A stores the mapping (192.168.1.20 → BB:BB:BB:BB:BB:BB) in its ARP cache. 
+7. PC-A can now encapsulate IP packets in frames addressed directly to PC-B's MAC. 
+ 
+ARP Message 
+Direction  /  Layer 2 Destination 
+ARP Request 
+Broadcast — sent to ff:ff:ff:ff:ff:ff — all hosts on segment receive it 
+ARP Reply 
+Unicast — sent only to the MAC of the requesting host 
+ 
+⏱️  ARP Cache:  To avoid repeating this process for every packet, ARP results are stored in an ARP 
+cache with a time-to-live. Entries are refreshed if communication continues, or expire if not. 
+ 
+ARP and Routing (Cross-Network) 
+When the destination IP is on a different network, PC-A does NOT ARP for the destination host. 
+Instead: 
+▸ PC-A ARPs for its default gateway (router) MAC address. 
+▸ The router receives the packet, decrements TTL, looks up its routing table, and forwards the 
+packet. 
+▸ At each hop, the sending device ARPs for the next-hop router's MAC — the IP addresses 
+remain unchanged throughout. 
+ 
+💡  Remember:  MAC addresses change at every hop (L2 scope). Source and Destination IP 
+addresses remain the same end-to-end (L3 scope).
+
+WEEK 4 — Network Layer, IPv4 & ARP   |   Study Notes 
+Week 4 Notes  |  Page  
+ 
+ 
+Quick Reference — Key Terms 
+ 
+Term 
+Definition 
+Layer 3 / Network 
+Layer 
+OSI layer responsible for logical addressing and routing packets across 
+networks. 
+IP Packet 
+The PDU at Layer 3. Contains L3 header (src/dst IP, TTL, protocol, etc.) + 
+payload. 
+Router 
+Layer 3 device that forwards packets between networks using a routing table. 
+Hop 
+One transit through a single router on the path from source to destination. 
+Routing Table 
+Per-router table listing destination networks and corresponding exit 
+interfaces. 
+TTL 
+Time-to-Live — decremented each hop, preventing infinite routing loops. 
+MTU 
+Maximum Transfer Unit — largest packet a link can carry (Ethernet: 1500 
+bytes). 
+Fragmentation 
+Splitting a packet into smaller pieces to cross a link with a smaller MTU. 
+Connectionless 
+No session/handshake before sending; no ACKs at the IP layer. 
+Best-Effort 
+IP doesn't guarantee delivery, order, or performance. 
+ARP 
+Address Resolution Protocol — maps IP addresses to MAC addresses on a 
+local segment. 
+ARP Cache 
+Table storing recently learned IP → MAC mappings to avoid repeated ARP 
+requests. 
+Unicast 
+One-to-one IP communication. 
+Broadcast 
+One-to-all IP communication (limited: 255.255.255.255; directed: subnet 
+broadcast). 
+Multicast 
+One-to-group IP communication (range: 224.0.0.0 – 239.255.255.255). 
+Private Address 
+Non-routable IP ranges used internally: 10/8, 172.16/12, 192.168/16. 
+NAT 
+Network Address Translation — allows private hosts to communicate via a 
+public IP. 
+IPv6 
+Next-gen IP with 128-bit addresses, designed to replace IPv4. 
+ 
+ 
+End of Week 4 Notes

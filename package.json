@@ -1,0 +1,12 @@
+{
+  "name": "revision-bot",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI Study Tool launcher scripts",
+  "scripts": {
+    "start": "node scripts/start.js --reload",
+    "dev": "node scripts/start.js --reload",
+    "start:prod": "node scripts/start.js",
+    "setup:py": "node scripts/setup-python.js"
+  }
+}
